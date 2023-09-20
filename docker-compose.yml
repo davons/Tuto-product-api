@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  database:
+    image: 'mysql:8.0'
+    container_name: product_database
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: db_products
+    ports:
+      - '3306:3306'
+    networks:
+      - product_net
+
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: product_phpmyadmin
+    depends_on:
+      - database
+    restart: unless-stopped
+    environment:
+      PMA_HOST: database
+    ports:
+      - '8181:80'
+    networks:
+      - product_net
+
+networks:
+  product_net:
+
+volumes:
+  db-data:
