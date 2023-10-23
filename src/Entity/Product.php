@@ -2,13 +2,22 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ProductRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: [
+        'groups' => ['product:read'],
+    ],
+    denormalizationContext: [
+        'groups' => ['product:write'],
+    ],
+)]
 class Product
 {
     #[ORM\Id]
@@ -17,28 +26,34 @@ class Product
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['product:read', 'product:write'])]
     private ?string $name = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['product:read', 'product:write'])]
     private ?int $price = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['product:read', 'product:write'])]
     private ?string $description = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
+    #[Groups(['product:read', 'product:write'])]
     private ?float $rating = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
+    #[Groups(['product:read', 'product:write'])]
     private ?int $stock = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['product:read', 'product:write'])]
     private ?string $brand = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $thumbnail = null;
-
-    #[ORM\Column(type: Types::ARRAY)]
-    private array $images = [];
+    #[ORM\ManyToOne(targetEntity: MediaObject::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    #[ApiProperty(types: ['https://schema.org/image'])]
+    #[Groups(['product:read', 'product:write'])]
+    public ?MediaObject $image = null;
 
     public function getId(): ?int
     {
@@ -117,27 +132,14 @@ class Product
         return $this;
     }
 
-    public function getThumbnail(): ?string
+    public function getImage(): ?MediaObject
     {
-        return $this->thumbnail;
+        return $this->image;
     }
 
-    public function setThumbnail(string $thumbnail): static
+    public function setImage(?MediaObject $image): void
     {
-        $this->thumbnail = $thumbnail;
-
-        return $this;
+        $this->image = $image;
     }
 
-    public function getImages(): array
-    {
-        return $this->images;
-    }
-
-    public function setImages(array $images): static
-    {
-        $this->images = $images;
-
-        return $this;
-    }
 }
